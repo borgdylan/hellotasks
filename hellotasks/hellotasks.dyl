@@ -60,6 +60,16 @@ class private LoopClosure extends TaskClosure
 		end if
 	end method
 	
+	method public void LongLoop()
+		Console::WriteLine("d {0} {1}", DateTime::get_Now()::ToString(), $object$Thread::get_CurrentThread()::get_ManagedThreadId())
+		if _i < 120 then
+			_i++
+			Await(Task::Delay(1000), new Action(LongLoop))
+		else
+			Return()
+		end if
+	end method
+	
 	method public void YieldLoop()
 		Console::WriteLine("y {0} {1}", DateTime::get_Now()::ToString(), $object$Thread::get_CurrentThread()::get_ManagedThreadId())
 		if _i < 10 then
@@ -103,7 +113,12 @@ class private LogClosure extends TaskClosure
 	end method
 	
 	method public void Log(var ex as Exception)
-		Console::WriteLine(ex::ToString())
+		if ex is TaskCanceledException then
+			Console::WriteLine("The underlying task got canceled!")
+		else
+			Console::WriteLine(ex::ToString())
+		end if
+		
 		Return()
 	end method
 	
@@ -130,6 +145,11 @@ class public Program
 		return clos::Await(Task::Delay(1000), new Action(clos::DelayLoop))
 	end method
 	
+	method public Task LongLoopAsync(var ck as CancellationToken)
+		var clos = new LoopClosure() {set_Canceller(ck)}
+		return clos::Await(Task::Delay(1000), new Action(clos::LongLoop))
+	end method
+	
 	method public Task YieldLoopAsync()
 		var clos = new LoopClosure()
 		return clos::Await(Task::Yield(), new Action(clos::YieldLoop))
@@ -146,7 +166,11 @@ class public Program
 	end method
 	
 	method public Task Main()
-		return YieldLoopAsync()
+		var cks = new CancellationTokenSource()
+		var t = LogAsync(LongLoopAsync(cks::get_Token()))
+		Console::ReadLine()
+		cks::Cancel()
+		return t
 	end method
 
 end class

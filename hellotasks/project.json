@@ -9,7 +9,7 @@
         "projectReferenceProviderType": "dylan.NET.K.DNProjectReferenceProvider"
     },
   "dependencies": {
-    "dylan.NET.Tasks": "1.1.1.1"
+    "dylan.NET.Tasks": "1.2.0.0"
   },
   "compilationOptions": {
     "define": []
@@ -20,7 +20,7 @@
   "frameworks": {
     "aspnet50": {
       "dependencies": {
-        "dylan.NET.K" : "1.0.7"
+        "dylan.NET.K" : "1.0.8"
       }
     },
     "aspnetcore50": {
