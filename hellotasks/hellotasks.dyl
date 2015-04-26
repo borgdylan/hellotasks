@@ -124,6 +124,26 @@ class private LogClosure extends TaskClosure
 	
 end class
 
+#if DNX451 then
+class public ReflectClosure extends TaskClosure
+
+	method public void ReflectClosure()
+		mybase::ctor()
+	end method
+	
+	method public void After()
+		Console::WriteLine("delay over")
+		Return()
+	end method
+	
+	method public void After(var i as integer)
+		Console::WriteLine(i"delay over returning {i}")
+		Return()
+	end method
+	
+end class
+end #if
+
 class public Program
 	
 	method public Task ReadAsync()
@@ -144,6 +164,18 @@ class public Program
 		var clos = new LoopClosure()
 		return clos::Await(Task::Delay(1000), new Action(clos::DelayLoop))
 	end method
+	
+	#if DNX451 then
+	method public Task ReflectedDelayAsync(var delay as integer)
+		var clos = new ReflectClosure()
+		return clos::Await(new ReflectWrapper(Task::Delay(delay)), new Action(clos::After))
+	end method
+	
+	method public Task ReflectedIntAsync(var i as integer)
+		var clos = new ReflectClosure()
+		return clos::Await<of integer>(new ReflectWrapper<of integer>(Task::FromResult<of integer>(i)), new Action<of integer>(clos::After))
+	end method
+	end #if
 	
 	method public Task LongLoopAsync(var ck as CancellationToken)
 		var clos = new LoopClosure() {set_Canceller(ck)}
@@ -166,8 +198,13 @@ class public Program
 	end method
 	
 	method public Task Main()
+		Console::WriteLine("started")
 		var cks = new CancellationTokenSource()
-		var t = LogAsync(LongLoopAsync(cks::get_Token()))
+		#if DNX451 then
+		var t = LogAsync(ReflectedIntAsync(2000))
+		#else
+		var t = LogAsync(YieldLoopAsync())
+		end #if
 		Console::ReadLine()
 		cks::Cancel()
 		return t
