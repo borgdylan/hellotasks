@@ -20,7 +20,7 @@
   "frameworks": {
     "dnx451": {
       "dependencies": {
-        "dylan.NET.K" : {"type": "build", "version":" 1.3.1"}
+        "dylan.NET.K" : {"type": "build", "version":" 1.3.4"}
       }
     },
     "dnxcore50": {
